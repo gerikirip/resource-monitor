@@ -47,6 +47,15 @@ public class ServerService {
                 .toList();
     }
 
+    public ServerResponse getServerById(Long id) {
+        Server server = serverRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Server with id " + id + " not found"
+                ));
+
+        return serverMapper.toResponse(server);
+    }
+
     public void deleteServer(Long id) {
         if (!serverRepository.existsById(id)) {
             throw new ResourceNotFoundException(

@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,10 +58,8 @@ public class ServerServiceTest {
 
         when(serverRepository.existsByName("web-server-01"))
                 .thenReturn(false);
-
         when(serverRepository.save(any(Server.class)))
                 .thenReturn(savedServer);
-
         when(serverMapper.toResponse(savedServer))
                 .thenReturn(expectedResponse);
 
@@ -129,10 +128,8 @@ public class ServerServiceTest {
 
         when(serverRepository.findAll())
                 .thenReturn(servers);
-
         when(serverMapper.toResponse(server1))
                 .thenReturn(response1);
-
         when(serverMapper.toResponse(server2))
                 .thenReturn(response2);
 
@@ -145,7 +142,6 @@ public class ServerServiceTest {
                 .containsExactly(response1, response2);
 
         verify(serverRepository).findAll();
-
         verify(serverMapper).toResponse(server1);
         verify(serverMapper).toResponse(server2);
     }
@@ -196,5 +192,55 @@ public class ServerServiceTest {
 
         verify(serverRepository).existsById(serverId);
         verify(serverRepository, never()).deleteById(anyLong());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenServerDoesNotExist() {
+        // Arrange
+        Long serverId = 1L;
+
+        when(serverRepository.findById(serverId))
+                .thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThatThrownBy(() -> serverService.getServerById(serverId))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("Server with id " + serverId + " not found");
+
+        verify(serverRepository).findById(serverId);
+        verifyNoInteractions(serverMapper);
+    }
+
+    @Test
+    void shouldReturnServerById() {
+        // Arrange
+        Long serverId = 1L;
+
+        Server savedServer = new Server(
+                "web-server-01",
+                "192.168.1.10"
+        );
+
+        ServerResponse expectedResponse = new ServerResponse(
+                1L,
+                "web-server-01",
+                "192.168.1.10",
+                ServerStatus.ONLINE,
+                Instant.now()
+        );
+
+        when(serverRepository.findById(serverId))
+                .thenReturn(Optional.of(savedServer));
+        when(serverMapper.toResponse(savedServer))
+                .thenReturn(expectedResponse);
+
+        // Act
+        ServerResponse response = serverService.getServerById(serverId);
+
+        // Assert
+        assertThat(response).isEqualTo(expectedResponse);
+
+        verify(serverRepository).findById(serverId);
+        verify(serverMapper).toResponse(savedServer);
     }
 }
