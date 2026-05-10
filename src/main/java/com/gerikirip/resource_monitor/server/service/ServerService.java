@@ -1,5 +1,6 @@
 package com.gerikirip.resource_monitor.server.service;
 
+import com.gerikirip.resource_monitor.common.exception.DuplicateResourceException;
 import com.gerikirip.resource_monitor.server.dto.CreateServerRequest;
 import com.gerikirip.resource_monitor.server.dto.ServerResponse;
 import com.gerikirip.resource_monitor.server.entity.Server;
@@ -22,7 +23,7 @@ public class ServerService {
     public ServerResponse createServer(CreateServerRequest request) {
 
         if (serverRepository.existsByName(request.name())) {
-            throw new IllegalArgumentException("Server name already exists");
+            throw new DuplicateResourceException("Server name already exists");
         }
 
         Server server = new Server(

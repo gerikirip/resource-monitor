@@ -1,5 +1,6 @@
 package com.gerikirip.resource_monitor.server.service;
 
+import com.gerikirip.resource_monitor.common.exception.DuplicateResourceException;
 import com.gerikirip.resource_monitor.server.dto.CreateServerRequest;
 import com.gerikirip.resource_monitor.server.dto.ServerResponse;
 import com.gerikirip.resource_monitor.server.entity.Server;
@@ -89,7 +90,7 @@ public class ServerServiceTest {
 
         // Act + Assert
         assertThatThrownBy(() -> serverService.createServer(request))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(DuplicateResourceException.class)
                 .hasMessage("Server name already exists");
 
         verify(serverRepository).existsByName("web-server-01");
