@@ -1,6 +1,7 @@
 package com.gerikirip.resource_monitor.server.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 
@@ -22,6 +23,8 @@ public class Server {
     @Column(nullable = false)
     private ServerStatus status = ServerStatus.ONLINE;
 
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
     protected Server() {}

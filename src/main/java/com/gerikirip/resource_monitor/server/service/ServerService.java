@@ -8,6 +8,8 @@ import com.gerikirip.resource_monitor.server.mapper.ServerMapper;
 import com.gerikirip.resource_monitor.server.repository.ServerRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ServerService {
 
@@ -35,4 +37,13 @@ public class ServerService {
 
         return serverMapper.toResponse(savedServer);
     }
+
+    public List<ServerResponse> getAllServers() {
+        return serverRepository
+                .findAll()
+                .stream()
+                .map(serverMapper::toResponse)
+                .toList();
+    }
+
 }

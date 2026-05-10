@@ -14,9 +14,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -96,5 +98,74 @@ public class ServerServiceTest {
         verify(serverRepository).existsByName("web-server-01");
         verify(serverRepository, never()).save(any(Server.class));
         verifyNoInteractions(serverMapper);
+    }
+
+    @Test
+    void shouldReturnAllServers() {
+        // Arrange
+        Server server1 = new Server(
+                "web-server-01",
+                "192.168.1.10"
+        );
+
+        Server server2 = new Server(
+                "db-server-01",
+                "192.168.1.20"
+        );
+
+        List<Server> servers = List.of(server1, server2);
+
+        ServerResponse response1 = new ServerResponse(
+                1L,
+                "web-server-01",
+                "192.168.1.10",
+                ServerStatus.ONLINE,
+                Instant.now()
+        );
+
+        ServerResponse response2 = new ServerResponse(
+                2L,
+                "db-server-01",
+                "192.168.1.20",
+                ServerStatus.WARNING,
+                Instant.now()
+        );
+
+        when(serverRepository.findAll())
+                .thenReturn(servers);
+
+        when(serverMapper.toResponse(server1))
+                .thenReturn(response1);
+
+        when(serverMapper.toResponse(server2))
+                .thenReturn(response2);
+
+        // Act
+        List<ServerResponse> responses = serverService.getAllServers();
+
+        // Assert
+        assertThat(responses)
+                .hasSize(2)
+                .containsExactly(response1, response2);
+
+        verify(serverRepository).findAll();
+
+        verify(serverMapper).toResponse(server1);
+        verify(serverMapper).toResponse(server2);
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoServersExist() {
+        // Arrange
+        when(serverRepository.findAll())
+                .thenReturn(new ArrayList<>());
+
+        // Act
+        List<ServerResponse> responses = serverService.getAllServers();
+
+        // Assert
+        assertThat(responses).isEmpty();
+
+        verify(serverRepository).findAll();
     }
 }
