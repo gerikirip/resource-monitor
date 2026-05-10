@@ -1,6 +1,7 @@
 package com.gerikirip.resource_monitor.server.service;
 
 import com.gerikirip.resource_monitor.common.exception.DuplicateResourceException;
+import com.gerikirip.resource_monitor.common.exception.ResourceNotFoundException;
 import com.gerikirip.resource_monitor.server.dto.CreateServerRequest;
 import com.gerikirip.resource_monitor.server.dto.ServerResponse;
 import com.gerikirip.resource_monitor.server.entity.Server;
@@ -46,4 +47,13 @@ public class ServerService {
                 .toList();
     }
 
+    public void deleteServer(Long id) {
+        if (!serverRepository.existsById(id)) {
+            throw new ResourceNotFoundException(
+                    "Server with id " + id + " not found"
+            );
+        }
+
+        serverRepository.deleteById(id);
+    }
 }

@@ -1,6 +1,7 @@
 package com.gerikirip.resource_monitor.server.service;
 
 import com.gerikirip.resource_monitor.common.exception.DuplicateResourceException;
+import com.gerikirip.resource_monitor.common.exception.ResourceNotFoundException;
 import com.gerikirip.resource_monitor.server.dto.CreateServerRequest;
 import com.gerikirip.resource_monitor.server.dto.ServerResponse;
 import com.gerikirip.resource_monitor.server.entity.Server;
@@ -39,11 +40,6 @@ public class ServerServiceTest {
         // Arrange
         CreateServerRequest request = new CreateServerRequest(
                 "web-server-01", "192.168.1.10"
-        );
-
-        Server server = new Server(
-                "web-server-01",
-                "192.168.1.10"
         );
 
         Server savedServer = new Server(
@@ -167,5 +163,38 @@ public class ServerServiceTest {
         assertThat(responses).isEmpty();
 
         verify(serverRepository).findAll();
+    }
+
+    @Test
+    void shouldDeleteServerWhenServerExists() {
+        // Arrange
+        Long serverId = 1L;
+
+        when(serverRepository.existsById(serverId))
+                .thenReturn(true);
+
+        // Act
+        serverService.deleteServer(serverId);
+
+        // Assert
+        verify(serverRepository).existsById(serverId);
+        verify(serverRepository).deleteById(serverId);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDeletingNonExistingServer() {
+        // Arrange
+        Long serverId = 1L;
+
+        when(serverRepository.existsById(serverId))
+                .thenReturn(false);
+
+        // Act + Assert
+        assertThatThrownBy(() -> serverService.deleteServer(serverId))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("Server with id " + serverId + " not found");
+
+        verify(serverRepository).existsById(serverId);
+        verify(serverRepository, never()).deleteById(anyLong());
     }
 }
