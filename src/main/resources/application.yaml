@@ -1,3 +1,5 @@
 spring:
   application:
     name: resource-monitor
+  profiles:
+    active: dev
