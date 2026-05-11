@@ -24,7 +24,6 @@ public class ServerService {
     }
 
     public ServerResponse createServer(CreateServerRequest request) {
-
         if (serverRepository.existsByName(request.name())) {
             throw new DuplicateResourceException("Server name already exists");
         }
