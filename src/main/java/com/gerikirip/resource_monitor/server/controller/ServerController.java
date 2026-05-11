@@ -1,11 +1,12 @@
 package com.gerikirip.resource_monitor.server.controller;
 
+import com.gerikirip.resource_monitor.server.dto.CreateServerRequest;
 import com.gerikirip.resource_monitor.server.dto.ServerResponse;
 import com.gerikirip.resource_monitor.server.service.ServerService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,12 +21,20 @@ public class ServerController {
     }
 
     @GetMapping
-    public List<ServerResponse> getAllServers() {
-        return serverService.getAllServers();
+    public ResponseEntity<List<ServerResponse>> getAllServers() {
+        List<ServerResponse> responses = serverService.getAllServers();
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/{id}")
-    public ServerResponse getServerById(@PathVariable Long id) {
-        return serverService.getServerById(id);
+    public ResponseEntity<ServerResponse> getServerById(@PathVariable Long id) {
+        ServerResponse response = serverService.getServerById(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<ServerResponse> createServer(@Valid @RequestBody CreateServerRequest request) {
+        ServerResponse response = serverService.createServer(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
