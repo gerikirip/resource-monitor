@@ -37,4 +37,10 @@ public class ServerController {
         ServerResponse response = serverService.createServer(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteServer(@PathVariable Long id) {
+        serverService.deleteServer(id);
+        return ResponseEntity.noContent().build();
+    }
 }

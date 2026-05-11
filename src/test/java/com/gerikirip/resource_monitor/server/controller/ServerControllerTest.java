@@ -18,8 +18,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -173,6 +172,9 @@ public class ServerControllerTest {
 
     @Test
     void shouldReturnBadRequestWhenCreateServerRequestIsInvalid() throws Exception {
+        // Arrange
+
+        // Act + Assert
         mockMvc.perform(post("/api/servers/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -188,6 +190,7 @@ public class ServerControllerTest {
 
     @Test
     void shouldReturnConflictWhenServerNameAlreadyExists() throws Exception {
+        // Arrange
         CreateServerRequest request = new CreateServerRequest(
                 "web-server-01",
                 "192.168.1.10"
@@ -196,6 +199,7 @@ public class ServerControllerTest {
         when(serverService.createServer(request))
                 .thenThrow(new DuplicateResourceException("Server name already exists"));
 
+        // Act + Assert
         mockMvc.perform(post("/api/servers/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -211,5 +215,37 @@ public class ServerControllerTest {
                 );
 
         verify(serverService).createServer(request);
+    }
+
+    @Test
+    void shouldDeleteServer() throws Exception {
+        // Arrange
+        Long serverId = 1L;
+
+        // Act + Assert
+        mockMvc.perform(delete("/api/servers/{id}", serverId))
+                .andExpect(status().isNoContent());
+
+        verify(serverService).deleteServer(serverId);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenDeletingNonExistingServer() throws Exception {
+        // Arrange
+        Long serverId = 1L;
+
+        doThrow(new ResourceNotFoundException(
+                "Server with id " + serverId + " not found"
+        )).when(serverService).deleteServer(serverId);
+
+        // Act + Assert
+        mockMvc.perform(delete("/api/servers/{id}", serverId))
+                .andExpectAll(
+                        status().isNotFound(),
+                        jsonPath("$.title").value("Resource not found"),
+                        jsonPath("$.detail").value("Server with id 1 not found")
+                );
+
+        verify(serverService).deleteServer(serverId);
     }
 }
